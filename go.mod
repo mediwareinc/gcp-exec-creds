@@ -1,7 +1,13 @@
 module github.com/sl1pm4t/gcp-exec-creds
 
+go 1.17
+
+require golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
+
 require (
-	cloud.google.com/go v0.34.0 // indirect
-	golang.org/x/net v0.0.0-20190108225652-1e06a53dbb7e // indirect
-	golang.org/x/oauth2 v0.0.0-20181203162652-d668ce993890
+	cloud.google.com/go v0.65.0 // indirect
+	github.com/golang/protobuf v1.4.2 // indirect
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
+	google.golang.org/appengine v1.6.6 // indirect
+	google.golang.org/protobuf v1.25.0 // indirect
 )
