@@ -1,0 +1,59 @@
+name: Build binaries and create a release of gcp-exec-creds
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    environment: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - release_arch: linux
+            goos: linux
+            goarch: amd64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup go environment
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.17.8'
+
+      - name: Build binaries
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          RELEASE_ARCH: ${{ matrix.release_arch }}
+          EXT: ${{ matrix.ext }}
+        run: |
+          VERSION=${GITHUB_SHA::8}
+          # If this is a git tag, use the tag name as a version number
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
+
+          # Disable CGO for portability
+          CGO_ENABLED=0
+          go env -w CGO_ENABLED=0
+
+          go env -w GOOS=$GOOS
+          go env -w GOARCH=$GOARCH
+
+          # Output directory
+          mkdir -p artifacts/
+
+          echo "Building ${GOOS}/${GOARCH}"
+          go build -a -v -trimpath -tags netgo -ldflags '-extldflags "-static"' -o artifacts/gcp-exec-creds_${VERSION}_${RELEASE_ARCH}${EXT}
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            artifacts/*
